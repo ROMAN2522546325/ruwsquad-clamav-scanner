@@ -1,0 +1,12 @@
+{
+  "name": "ruwsquad-clamav-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scan": "node scan-pending.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0"
+  }
+}
