@@ -1,10 +1,10 @@
-
 name: RuWSquad ClamAV scan
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '23 * * * *'
+    # Check the queue every 15 minutes. GitHub may delay scheduled runs under load.
+    - cron: '7,22,37,52 * * * *'
 
 permissions:
   contents: read
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - name: Checkout scanner
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install ClamAV
+      - name: Install ClamAV and update signatures
         run: |
           sudo apt-get update
           sudo apt-get install -y clamav clamav-freshclam
@@ -37,12 +37,14 @@ jobs:
       - name: Install scanner dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Scan pending and published resources
+      - name: Scan queued resources and attachments
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_STORAGE_BUCKET: ruwsquad-files
-          SCAN_BATCH_SIZE: '6'
+          SCAN_BATCH_SIZE: '10'
           MAX_DOWNLOAD_BYTES: '52428800'
+          MAX_ASSET_BYTES: '12582912'
+          MAX_TOTAL_SCAN_BYTES: '83886080'
+          MAX_SCAN_ATTEMPTS: '3'
         run: npm run scan
-
